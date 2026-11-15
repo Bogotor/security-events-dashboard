@@ -56,6 +56,16 @@ Los POST requieren JSON de hasta 16 KiB. Las notas admiten hasta 2000 caracteres
 
 La credencial temporal del panel limita solicitudes desde otros orígenes; no es autenticación de un analista. Cualquier proceso local con acceso al servidor puede leer el panel y obtener esa credencial. Las notas y la base no están cifradas en disco.
 
-## Antes de publicar
+## Entrada pública WSGI
 
-Faltan autenticación, autorización por usuario, HTTPS gestionado por el alojamiento, limitación de solicitudes, aislamiento entre visitantes y una estrategia de retención, respaldo y restauración. No exponer este servidor a internet mediante un túnel. Preparar un despliegue separado y revisar su modelo de amenazas.
+`webapp.py` reutiliza `Store`, `scenario` y `detect` de `app.py`. La entrada local mantiene su comportamiento; la pública añade sesiones anónimas opacas, SQLite separado por visitante, protección de origen y CSRF, límites de almacenamiento y frecuencia, caducidad y reinicio de la sesión. No hay acceso público a la credencial de ingesta local, ni se admite ingesta de eventos externos en la demo.
+
+`wsgi.py` configura el origen HTTPS y la carpeta privada mediante variables de entorno. Si faltan, responde 503 y no expone la aplicación. La entrada no implementa cuentas de analistas ni integra registros reales: es una demostración educativa con datos sintéticos y notas temporales.
+
+El registro de SQLite serializa el acceso entre procesos WSGI. Cada solicitud cierra su conexión a la base de eventos. La herramienta `scripts/backup_demo.py` crea instantáneas SQLite consistentes y se prueba su restauración.
+
+## Antes de compartir la demo
+
+No exponer el servidor HTTP local mediante un túnel. Configurar WSGI, HTTPS, variables y almacenamiento persistente en Alwaysdata, y verificar allí la separación entre visitantes y la conservación de datos tras reiniciar. El código preparado no implica un despliegue remoto verificado.
+
+Ver [despliegue y límites](DESPLIEGUE-ALWAYSDATA.md).

@@ -4,8 +4,8 @@ Solicitud del autor: recordar cómo compartir el proyecto con reclutadores cuand
 
 Este pendiente forma parte del cierre, no de una fecha de calendario.
 
-- [ ] Elegir alojamiento y comprobar costos y persistencia de datos.
-- [ ] Preparar una demo pública con datos sintéticos y sesiones aisladas o acciones limitadas por visitante.
+- [x] Elegir Alwaysdata Free (0 €) y revisar sus límites y condiciones. La persistencia real queda pendiente de verificación tras publicar.
+- [x] Preparar la entrada WSGI con datos sintéticos, sesiones aisladas y límites por visitante; pendiente de publicar.
 - [ ] Incorporar autenticación y controles adecuados antes de exponer funciones de administración o ingesta.
 - [ ] Publicar la demo y comprobar que se puede probar sin instalar nada.
 - [x] Preparar y publicar el repositorio en GitHub sin bases de datos, credenciales ni secretos: https://github.com/Bogotor/security-events-dashboard.

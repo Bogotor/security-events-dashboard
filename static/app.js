@@ -4,6 +4,7 @@ const types = {login_failed: 'Acceso fallido', login_success: 'Acceso exitoso', 
 const statuses = {pending: 'Pendiente', investigating: 'En investigación', resolved: 'Resuelta'};
 let state = {events: [], alerts: []};
 let panelToken = '';
+let publicDemo = false;
 let alertFilter = 'open';
 let page = 0;
 let busy = false;
@@ -111,7 +112,7 @@ $('investigation-form').addEventListener('submit', async e => {
     await request('/api/alerts/update', {id: $('detail-id').value, status: $('detail-status').value, note: $('detail-note').value});
     $('alert-dialog').close();
     await refresh();
-    toast('Investigación guardada en tu base de datos local.');
+    toast(publicDemo ? 'Investigación guardada en SQLite para tu sesión de demo.' : 'Investigación guardada en tu base de datos local.');
   } catch (error) {toast(error.message, true);}
   finally {$('save-button').disabled = false;}
 });
@@ -135,7 +136,17 @@ $('export-button').addEventListener('click', async () => {
 $('timezone').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
 async function connect() {
   try {
-    panelToken = (await request('/api/bootstrap')).panel_token;
+    const bootstrap = await request('/api/bootstrap');
+    panelToken = bootstrap.panel_token;
+    publicDemo = bootstrap.mode === 'public_demo';
+    if (publicDemo) {
+      $('environment-label').textContent = 'DEMO';
+      $('lab-mode').textContent = 'Demo pública';
+      $('lab-title').textContent = 'Python y SQLite, funcionando en el servidor';
+      $('lab-description').textContent = 'Datos ficticios y sesión propia. Caduca a las 24 horas. No ingreses información personal ni credenciales.';
+      $('simulation-description').textContent = 'Cada escenario se procesa en Python y se guarda en SQLite para tu sesión.';
+      $('reset-demo').hidden = false;
+    }
     await refresh();
   } catch (error) {
     $('sync-label').textContent = 'Sin conexión · Reintentando en 15 s';
@@ -144,6 +155,24 @@ async function connect() {
 }
 connect();
 setInterval(async () => {
-  if (busy || $('alert-dialog').open || $('rules-dialog').open) return;
+  if (busy || $('alert-dialog').open || $('rules-dialog').open || $('reset-dialog').open) return;
   await connect();
 }, 15000);
+
+$('reset-demo').addEventListener('click', () => $('reset-dialog').showModal());
+$('confirm-reset').addEventListener('click', async () => {
+  if (busy) return;
+  busy = true;
+  $('confirm-reset').disabled = true;
+  try {
+    await request('/api/reset', {});
+    $('reset-dialog').close();
+    page = 0;
+    $('event-search').value = '';
+    $('event-type').value = 'all';
+    $('event-date').value = '';
+    await refresh();
+    toast('Tu demo se reinició. Puedes probar otro escenario.');
+  } catch (error) { toast(error.message, true); }
+  finally { busy = false; $('confirm-reset').disabled = false; }
+});

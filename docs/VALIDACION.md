@@ -30,3 +30,12 @@ Captura: [panel.jpg](panel.jpg), con datos sintéticos creados durante las prueb
 ## Límites de esta validación
 
 No se ha validado un despliegue público, carga de producción, accesibilidad exhaustiva ni recuperación desde copias de respaldo. La exportación JSON se verificó mediante la API; la descarga desde el botón no se probó de extremo a extremo. Los controles de esta versión sirven para un laboratorio local y no sustituyen la preparación de una demo pública.
+
+
+## Preparación de la demo WSGI
+
+Se amplió la suite a **39 pruebas**: las 19 originales y 20 adicionales para aislamiento entre visitantes, cookies, origen y CSRF, persistencia entre instancias, cuotas, expiración, reinicio, restauración de SQLite y configuración de la entrada WSGI.
+
+En la previsualización local WSGI se verificaron en navegador: rótulo de demo, escenario sospechoso con seis eventos y dos alertas, investigación guardada en SQLite, descarga JSON y reinicio a cero eventos. Captura: [demo-wsgi.jpg](demo-wsgi.jpg).
+
+Estos resultados locales no sustituyen las comprobaciones pendientes en Alwaysdata: HTTPS, variables del sitio, comportamiento del servidor del proveedor, almacenamiento persistente y consumo de recursos. La suite de integración continua se ejecuta también en Python 3.9, 3.12 y 3.14.
