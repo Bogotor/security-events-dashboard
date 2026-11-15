@@ -64,8 +64,8 @@ La credencial temporal del panel limita solicitudes desde otros orígenes; no es
 
 El registro de SQLite serializa el acceso entre procesos WSGI. Cada solicitud cierra su conexión a la base de eventos. La herramienta `scripts/backup_demo.py` crea instantáneas SQLite consistentes y se prueba su restauración.
 
-## Antes de compartir la demo
+## Despliegue público
 
-No exponer el servidor HTTP local mediante un túnel. Configurar WSGI, HTTPS, variables y almacenamiento persistente en Alwaysdata, y verificar allí la separación entre visitantes y la conservación de datos tras reiniciar. El código preparado no implica un despliegue remoto verificado.
+La demo está publicada en https://bogotor.alwaysdata.net/ mediante Python 3.12 y WSGI. HTTPS, variables de entorno, aislamiento entre sesiones y conservación de datos después de reiniciar se verificaron en Alwaysdata el 15 de noviembre de 2026. SQLite se guarda en una carpeta privada fuera del código. El servidor HTTP local sigue reservado para desarrollo.
 
 Ver [despliegue y límites](DESPLIEGUE-ALWAYSDATA.md).

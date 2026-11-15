@@ -4,7 +4,9 @@
 
 Proyecto de portafolio para recibir eventos de una aplicación de prueba, detectar comportamientos sospechosos y documentar su investigación.
 
-![Panel local con eventos y alertas de ejemplo](docs/panel.jpg)
+**[Probar la demo pública](https://bogotor.alwaysdata.net/)** · Sin registro ni instalación. Usa únicamente datos ficticios.
+
+![Demo pública de Vigía en Alwaysdata](docs/demo-publica.jpg)
 
 
 ## Stack
@@ -18,7 +20,7 @@ Proyecto de portafolio para recibir eventos de una aplicación de prueba, detect
 | Pruebas | unittest | Detecciones, transacciones, persistencia y controles HTTP |
 | Integración continua | GitHub Actions | Pruebas en Python 3.9, 3.12 y 3.14, y revisión de sintaxis JavaScript |
 
-**Estado:** laboratorio local funcional. La demo pública todavía no está desplegada. Las alertas requieren investigación y no confirman por sí solas una intrusión.
+**Estado:** demo pública desplegada en Alwaysdata Free y versión local funcional. Las alertas requieren investigación y no confirman por sí solas una intrusión.
 
 ## Ejecutar en tu computador
 
@@ -50,7 +52,7 @@ Cada simulación usa una cuenta ficticia diferente para evitar mezclar escenario
 
 ## Demo completa para Alwaysdata
 
-La entrada pública está preparada y probada localmente. El despliegue en Alwaysdata está pendiente de crear y configurar la cuenta; todavía no hay una URL pública de la aplicación.
+La demo está publicada en **https://bogotor.alwaysdata.net/** desde el 15 de noviembre de 2026. Se verificaron HTTPS, detecciones en Python, separación entre visitantes y conservación de eventos y notas tras reiniciar el sitio.
 
 La demo ejecuta las detecciones en **Python** y guarda los datos en **SQLite en el servidor**. Cada visitante tiene una sesión propia de 24 horas, con escenarios ficticios, límites de uso, exportación y reinicio independiente. La ingesta externa de registros reales está deshabilitada en esta entrada.
 
@@ -68,7 +70,7 @@ Ver [guía de despliegue, límites y respaldos](docs/DESPLIEGUE-ALWAYSDATA.md).
 
 ## Enviar un evento a la API
 
-Con el servidor iniciado, desde otra terminal en esta carpeta:
+Este ejemplo es para la entrada local `app.py`; la demo pública no admite ingesta externa. Con el servidor local iniciado, desde otra terminal en esta carpeta:
 
 ```sh
 python3 examples/send_event.py
@@ -132,11 +134,11 @@ No requiere un modelo de IA ni una API de pago. Las detecciones iniciales serán
 
 ## Costos y publicación
 
-El desarrollo y las pruebas iniciales se ejecutarán en el computador del autor con herramientas gratuitas. No se contratará infraestructura para esta etapa.
+La demo utiliza Alwaysdata **Free (0 €)** con su subdominio gratuito, Python WSGI y almacenamiento persistente para SQLite. No se contrató un plan de pago ni un dominio propio.
 
-La publicación será una etapa posterior: se elegirá alojamiento considerando persistencia de datos, límites del plan gratuito, autenticación y costos vigentes. No se debe asumir que un disco local de un alojamiento gratuito conserva SQLite entre reinicios.
+El plan tiene límites de recursos y condiciones de actividad: durante el primer año hay que entrar al panel administrativo al menos cada 120 días. Ver [condiciones y mantenimiento](docs/DESPLIEGUE-ALWAYSDATA.md).
 
-La demo pública utilizará datos sintéticos y separará la experiencia de demostración de cualquier futura ingesta de datos reales. Un dominio propio es opcional.
+Cada visitante trabaja con datos sintéticos y una sesión temporal separada. La persistencia entre reinicios del sitio se verificó; las sesiones caducan a las 24 horas por diseño.
 
 ## Evidencias que debe incluir el portafolio
 
@@ -164,9 +166,9 @@ Usar identificadores y direcciones de ejemplo. No registrar contraseñas, tokens
 
 Primera versión local implementada. Incluye API con ingesta autenticada, almacenamiento persistente, motor de reglas, panel, simulaciones, filtros, exportación e investigaciones.
 
-El código está publicado en [GitHub](https://github.com/Bogotor/security-events-dashboard). La aplicación todavía no se ha desplegado en internet. Esta versión escucha exclusivamente en el computador del autor y no autentica analistas locales. La entrada WSGI incorpora sesiones aisladas, controles de origen y límites. Falta configurar la cuenta de Alwaysdata y verificar el funcionamiento, HTTPS y persistencia en el alojamiento real.
+El código está publicado en [GitHub](https://github.com/Bogotor/security-events-dashboard) y la demo en [Alwaysdata](https://bogotor.alwaysdata.net/). La entrada local escucha exclusivamente en el computador del autor. La entrada pública WSGI incorpora sesiones aisladas, controles de origen y límites. Se verificaron en el alojamiento real HTTPS, aislamiento y persistencia tras un reinicio.
 
-Al cerrar el proyecto retomaremos la publicación de demo y repositorio, el video breve y los enlaces para CV y LinkedIn, según el recordatorio de cierre.
+Pendientes de presentación: grabar el video breve y añadir los enlaces de demo, código y video al CV y LinkedIn, según el recordatorio de cierre. El despliegue se actualiza manualmente; todavía no hay despliegue continuo configurado.
 
 
 ## Licencia

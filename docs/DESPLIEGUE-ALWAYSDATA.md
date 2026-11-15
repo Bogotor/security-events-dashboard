@@ -1,6 +1,6 @@
 # Despliegue de Vigía en Alwaysdata Free
 
-Estado: entrada WSGI preparada. La cuenta, el subdominio y el despliegue remoto todavía deben verificarse en el proveedor. Este documento no afirma que la demo ya esté publicada.
+Estado: **desplegado y verificado el 15 de noviembre de 2026** en [https://bogotor.alwaysdata.net/](https://bogotor.alwaysdata.net/). Versión de código desplegada: `c42f494`. Configuración: Alwaysdata Free, Python 3.12, entrada WSGI, redirección obligatoria a HTTPS y carpeta SQLite privada fuera del repositorio.
 
 ## Qué se publica
 
@@ -108,3 +108,15 @@ Con las pruebas de GitHub aprobadas, actualizar desde SSH con `git pull --ff-onl
 - [Oferta y límites](https://help.alwaysdata.com/en/docs/admin-billing/billing/public-cloud-prices/).
 - [Inactividad](https://help.alwaysdata.com/en/docs/admin-billing/profile/suspension/).
 - [Copias de respaldo](https://help.alwaysdata.com/en/docs/web-hosting/backups/).
+
+
+## Resultado del primer despliegue
+
+- Se clonó `main` desde GitHub y se ejecutaron las 39 pruebas con Python 3.12 en Alwaysdata: resultado correcto.
+- El panel público generó seis eventos y dos alertas en el escenario sospechoso.
+- Una resolución y su nota persistieron después de reiniciar el sitio desde el panel de Alwaysdata.
+- Una comprobación HTTP con dos clientes y cookies independientes confirmó que los datos no se comparten y que un visitante no puede modificar una alerta ajena.
+- Se verificaron los atributos Secure/HttpOnly/SameSite de la cookie, el bloqueo de ingesta externa y archivos privados, y la redirección de HTTP a HTTPS.
+- Se creó una copia consistente de SQLite con la herramienta incluida, que verificó su integridad en el alojamiento real. La restauración aislada está cubierta por las pruebas; no se hizo una restauración destructiva sobre la demo publicada.
+
+El plan gratuito sigue sujeto a sus límites y condiciones; estas comprobaciones funcionales no son una prueba de carga ni una auditoría independiente.
