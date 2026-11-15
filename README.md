@@ -1,5 +1,7 @@
 # Vigía · Panel de eventos de seguridad
 
+[![Pruebas de Vigía](https://github.com/Bogotor/security-events-dashboard/actions/workflows/tests.yml/badge.svg)](https://github.com/Bogotor/security-events-dashboard/actions/workflows/tests.yml)
+
 Proyecto de portafolio para recibir eventos de una aplicación de prueba, detectar comportamientos sospechosos y documentar su investigación.
 
 ![Panel local con eventos y alertas de ejemplo](docs/panel.jpg)
@@ -142,7 +144,7 @@ Usar identificadores y direcciones de ejemplo. No registrar contraseñas, tokens
 
 Primera versión local implementada. Incluye API con ingesta autenticada, almacenamiento persistente, motor de reglas, panel, simulaciones, filtros, exportación e investigaciones.
 
-Todavía no se ha publicado en internet. Esta versión escucha exclusivamente en el computador del autor y no autentica analistas locales. Antes de convertirla en una demo pública hay que preparar el alojamiento, el aislamiento entre visitantes y los controles descritos en la arquitectura.
+El código está publicado en [GitHub](https://github.com/Bogotor/security-events-dashboard). La aplicación todavía no se ha desplegado en internet. Esta versión escucha exclusivamente en el computador del autor y no autentica analistas locales. Antes de convertirla en una demo pública hay que preparar el alojamiento, el aislamiento entre visitantes y los controles descritos en la arquitectura.
 
 Al cerrar el proyecto retomaremos la publicación de demo y repositorio, el video breve y los enlaces para CV y LinkedIn, según el recordatorio de cierre.
 
