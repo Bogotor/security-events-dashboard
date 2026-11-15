@@ -11,7 +11,7 @@ Proyecto de portafolio para recibir eventos de una aplicación de prueba, detect
 
 | Parte | Tecnología | Responsabilidad |
 | --- | --- | --- |
-| Servidor y API | Python 3.9+, biblioteca estándar | Validación, recepción de eventos e investigaciones |
+| Servidor y API | Python 3.9+, biblioteca estándar y entrada WSGI | Validación, recepción de eventos e investigaciones |
 | Almacenamiento | SQLite | Persistencia local de eventos, alertas y notas |
 | Interfaz | HTML, CSS y JavaScript sin frameworks | Panel adaptable, filtros, simulaciones y evidencia |
 | Detección | Reglas temporales en Python | Secuencias de fallos, accesos posteriores y cambios de permisos |
@@ -46,6 +46,25 @@ Los eventos y las investigaciones se conservan en `data/events.sqlite3`. El arch
 
 Cada simulación usa una cuenta ficticia diferente para evitar mezclar escenarios. Las métricas muestran todos los datos guardados; los filtros solo afectan la tabla de eventos. Las alertas tienen su propio filtro de estado. El panel consulta cambios cada 15 segundos, excepto mientras hay un diálogo abierto o se ejecuta una simulación.
 
+
+
+## Demo completa para Alwaysdata
+
+La entrada pública está preparada y probada localmente. El despliegue en Alwaysdata está pendiente de crear y configurar la cuenta; todavía no hay una URL pública de la aplicación.
+
+La demo ejecuta las detecciones en **Python** y guarda los datos en **SQLite en el servidor**. Cada visitante tiene una sesión propia de 24 horas, con escenarios ficticios, límites de uso, exportación y reinicio independiente. La ingesta externa de registros reales está deshabilitada en esta entrada.
+
+Para previsualizar ese modo en tu computador:
+
+```sh
+python3 webapp.py
+```
+
+Abrir http://127.0.0.1:8766. Este servidor es solo para desarrollo. En Alwaysdata se usa `wsgi.py` detrás de su servidor HTTPS y WSGI.
+
+![Previsualización local de la entrada WSGI](docs/demo-wsgi.jpg)
+
+Ver [guía de despliegue, límites y respaldos](docs/DESPLIEGUE-ALWAYSDATA.md).
 
 ## Enviar un evento a la API
 
@@ -138,13 +157,14 @@ Usar identificadores y direcciones de ejemplo. No registrar contraseñas, tokens
 - [Arquitectura, API y límites](docs/ARQUITECTURA.md).
 - [Investigación de ejemplo](docs/INVESTIGACION-EJEMPLO.md).
 - [Resultados de validación](docs/VALIDACION.md).
+- [Despliegue completo en Alwaysdata](docs/DESPLIEGUE-ALWAYSDATA.md).
 - [Recordatorio: publicación y presentación a reclutadores](docs/CIERRE-PORTAFOLIO.md).
 
 ## Estado y siguiente etapa
 
 Primera versión local implementada. Incluye API con ingesta autenticada, almacenamiento persistente, motor de reglas, panel, simulaciones, filtros, exportación e investigaciones.
 
-El código está publicado en [GitHub](https://github.com/Bogotor/security-events-dashboard). La aplicación todavía no se ha desplegado en internet. Esta versión escucha exclusivamente en el computador del autor y no autentica analistas locales. Antes de convertirla en una demo pública hay que preparar el alojamiento, el aislamiento entre visitantes y los controles descritos en la arquitectura.
+El código está publicado en [GitHub](https://github.com/Bogotor/security-events-dashboard). La aplicación todavía no se ha desplegado en internet. Esta versión escucha exclusivamente en el computador del autor y no autentica analistas locales. La entrada WSGI incorpora sesiones aisladas, controles de origen y límites. Falta configurar la cuenta de Alwaysdata y verificar el funcionamiento, HTTPS y persistencia en el alojamiento real.
 
 Al cerrar el proyecto retomaremos la publicación de demo y repositorio, el video breve y los enlaces para CV y LinkedIn, según el recordatorio de cierre.
 
