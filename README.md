@@ -1,76 +1,102 @@
-# Vigía · Panel de eventos de seguridad
+# Vigía · Detección e investigación de eventos de seguridad
 
 [![Pruebas de Vigía](https://github.com/Bogotor/security-events-dashboard/actions/workflows/tests.yml/badge.svg)](https://github.com/Bogotor/security-events-dashboard/actions/workflows/tests.yml)
 
-Proyecto de portafolio para recibir eventos de una aplicación de prueba, detectar comportamientos sospechosos y documentar su investigación.
+**Vigía es una aplicación web que transforma eventos de acceso y cambios de permisos en alertas con evidencia para investigar.** Es un proyecto de portafolio con backend Python, persistencia SQLite, pruebas automatizadas y una demo completa desplegada por HTTPS.
 
-**[Probar la demo pública](https://bogotor.alwaysdata.net/)** · Sin registro ni instalación. Usa únicamente datos ficticios.
+**[Probar la demo pública](https://bogotor.alwaysdata.net/)** · Sin registro ni instalación · Datos sintéticos · Sesiones independientes.
 
 ![Demo pública de Vigía en Alwaysdata](docs/demo-publica.jpg)
 
+## Qué problema aborda
 
-## Stack
+Una aplicación puede registrar muchos intentos de acceso sin hacer evidente una secuencia sospechosa. Por ejemplo, cinco fallos seguidos de un acceso exitoso podrían pasar inadvertidos al revisar los registros por separado.
 
-| Parte | Tecnología | Responsabilidad |
+Vigía agrupa esos eventos por cuenta, aplica reglas temporales y presenta una alerta con los eventos que la originaron. Una persona puede revisar la evidencia, registrar una hipótesis y documentar el cierre de la investigación.
+
+El usuario objetivo sería quien administra una aplicación o revisa su seguridad. El beneficio esperado es facilitar la identificación y revisión de actividad sospechosa; **todavía no se ha medido ese beneficio con usuarios reales**.
+
+**Alcance actual:** prototipo educativo funcional. La demo genera sus propios eventos; no está conectada a una aplicación externa, no vigila el computador del visitante y no confirma ni bloquea ataques automáticamente.
+
+## Probarlo en dos minutos
+
+1. Abrir la [demo](https://bogotor.alwaysdata.net/) y pulsar **Acceso sospechoso**. Se guardan seis eventos y aparecen dos alertas.
+2. Abrir **Acceso después de múltiples fallos** y revisar sus seis eventos de evidencia: cuenta, IP, horas y secuencia.
+3. Seleccionar **En investigación**, escribir una nota y guardar. Después marcar **Resuelta** con una conclusión. La alerta pasa a la pestaña Resueltas.
+4. Probar **Actividad habitual**: un fallo y un acceso exitoso no generan una alerta nueva. **Cambio de permisos** sí genera una.
+
+Los filtros inferiores afectan al registro de eventos; las pestañas filtran las alertas. Los contadores superiores resumen toda la sesión. **Exportar datos** descarga eventos, alertas y notas en JSON; **Reiniciar mi demo** borra únicamente los datos de la sesión propia.
+
+Cada visitante comienza con una sesión independiente que caduca a las 24 horas. Las detecciones se ejecutan en **Python** y los datos se guardan en **SQLite en el servidor**. Usar únicamente información ficticia, también en las notas.
+
+## Qué detecta
+
+| Regla | Condición | Qué conviene investigar |
 | --- | --- | --- |
-| Servidor y API | Python 3.9+, biblioteca estándar y entrada WSGI | Validación, recepción de eventos e investigaciones |
-| Almacenamiento | SQLite | Persistencia local de eventos, alertas y notas |
-| Interfaz | HTML, CSS y JavaScript sin frameworks | Panel adaptable, filtros, simulaciones y evidencia |
-| Detección | Reglas temporales en Python | Secuencias de fallos, accesos posteriores y cambios de permisos |
-| Pruebas | unittest | Detecciones, transacciones, persistencia y controles HTTP |
-| Integración continua | GitHub Actions | Pruebas en Python 3.9, 3.12 y 3.14, y revisión de sintaxis JavaScript |
+| Intentos repetidos | Al menos cinco fallos de una cuenta dentro de cinco minutos | Errores legítimos o intentos de adivinar la contraseña |
+| Acceso después de fallos | Un acceso exitoso tras al menos cinco fallos dentro de cinco minutos | Si el propietario reconoce el acceso |
+| Cambio de permisos | Un cambio entre dos roles diferentes | Si existe una solicitud autorizada para ese cambio |
 
-**Estado:** demo pública desplegada en Alwaysdata Free y versión local funcional. Las alertas requieren investigación y no confirman por sí solas una intrusión.
+Un acceso exitoso reinicia la secuencia de fallos de esa cuenta. La primera regla suprime alertas repetidas durante cinco minutos. Los umbrales son decisiones del prototipo; **una alerta es una señal para revisar, no una intrusión confirmada**.
 
-## Ejecutar en tu computador
+Ver la [investigación de ejemplo](docs/INVESTIGACION-EJEMPLO.md) y las [reglas, API y casos límite](docs/ARQUITECTURA.md).
 
-Requisito: Python 3.9 o superior. No requiere pip, Node, Docker, cuenta en la nube ni una API de IA.
+## Cómo funciona
 
-Desde esta carpeta:
+```text
+Evento -> API Python -> SQLite -> Reglas temporales -> Alerta con evidencia
+                                                            |
+                                                   Revisión y nota del analista
+```
+
+El proyecto tiene dos entradas que reutilizan el mismo motor de detección:
+
+| Entrada | Uso | Origen de los eventos |
+| --- | --- | --- |
+| `app.py` | Laboratorio local y pruebas de integración | Escenarios incluidos o API de ingesta con credencial local |
+| `wsgi.py` / `webapp.py` | Demo pública en Alwaysdata | Solo escenarios sintéticos incluidos; ingesta externa deshabilitada |
+
+## Stack y decisiones
+
+| Tecnología o decisión | Motivo y límite |
+| --- | --- |
+| Python 3.9+ y biblioteca estándar | Permite ejecutar el proyecto sin instalar paquetes externos. La entrada pública usa WSGI y el alojamiento ejecuta Python 3.12. |
+| SQLite | Conserva eventos, alertas y notas sin un servidor de base de datos adicional. Las escrituras se serializan; el proyecto no está preparado para grandes volúmenes. |
+| HTML, CSS y JavaScript sin frameworks | Interfaz sin compilación. JavaScript presenta los resultados; el motor de detección permanece en Python. |
+| Reglas explícitas | Permiten explicar cada alerta y su evidencia. Detectan únicamente los patrones implementados y pueden producir falsos positivos. |
+| Sesiones públicas de 24 horas | Separan los datos entre visitantes y limitan la retención. La demo no implementa cuentas de analistas ni está pensada para datos reales. |
+| `unittest` y GitHub Actions | Pruebas automáticas en Python 3.9, 3.12 y 3.14; comprobación de sintaxis del cliente JavaScript. |
+
+No se usa una API de IA para detectar eventos. El funcionamiento de las reglas es determinista.
+
+## Qué se ha verificado
+
+- **39 pruebas automatizadas:** ventanas temporales, duplicados, eventos fuera de orden, transacciones, persistencia, sesiones, controles HTTP, cuotas y respaldo/restauración.
+- **Despliegue real:** las 39 pruebas aprobaron con Python 3.12 en Alwaysdata; eventos y notas se conservaron después de reiniciar el sitio.
+- **Aislamiento y acceso:** dos clientes HTTP independientes no comparten datos ni pueden modificar alertas ajenas. Se verificaron cookies protegidas, redirección HTTPS y bloqueo de rutas privadas.
+- **Respaldo:** se creó y verificó una instantánea consistente de SQLite en el alojamiento. La restauración se prueba en un entorno aislado; no se hizo una restauración destructiva de la demo pública.
+
+Los [resultados de validación](docs/VALIDACION.md) documentan la evidencia y sus límites. No se han realizado pruebas de carga, una auditoría independiente ni una revisión exhaustiva de accesibilidad.
+
+## Ejecutar localmente
+
+Requisito: **Python 3.9 o superior**. No requiere pip, Node, Docker ni una cuenta en la nube para ejecutarse.
 
 ```sh
+git clone https://github.com/Bogotor/security-events-dashboard.git
+cd security-events-dashboard
 python3 app.py
 ```
 
-Abrir http://127.0.0.1:8765 en el navegador. Para detener el servidor, presionar `Ctrl+C` en su terminal. Si el puerto está ocupado, ejecutar `python3 app.py --port 8766` y usar esa dirección.
+Abrir **http://127.0.0.1:8765**. Detener el servidor con `Ctrl+C`. Se puede elegir otro puerto con `python3 app.py --port 8767`.
 
-Los eventos y las investigaciones se conservan en `data/events.sqlite3`. El archivo `data/ingest.token` contiene una credencial de ingesta local. Toda la carpeta `data/` está excluida de Git y no debe publicarse. No se precargan eventos: las simulaciones crean los datos de ejemplo cuando las ejecutas.
+Los datos locales se guardan en `data/events.sqlite3` y la credencial de ingesta en `data/ingest.token`. La carpeta `data/`, las credenciales y los archivos `.env` están excluidos de Git.
 
-## Probar el recorrido principal
+Para previsualizar el modo público, ejecutar `python3 webapp.py` y abrir **http://127.0.0.1:8766**. Ambas entradas locales son servidores de desarrollo; Alwaysdata ejecuta `wsgi.py` detrás de su servidor WSGI y HTTPS.
 
-1. Pulsar **Acceso sospechoso**. Aparecen seis eventos y dos alertas: intentos repetidos y acceso después de múltiples fallos.
-2. Abrir la alerta de prioridad alta y revisar los seis eventos de evidencia.
-3. Elegir **En investigación**, añadir una nota y guardar.
-4. Abrir la misma alerta, completar la nota y marcar **Resuelta**. Aparecerá en la pestaña Resueltas.
-5. Pulsar **Actividad habitual**. Agrega dos eventos sin crear alertas nuevas.
-6. Pulsar **Cambio de permisos**. Agrega un evento y una alerta con los roles anterior y nuevo.
-7. Probar búsqueda por usuario o IP, filtro de tipo, fecha local y paginación. Usar **Exportar datos** para descargar eventos, alertas y notas como JSON; no incluye la credencial de ingesta y no sustituye una copia restaurable de SQLite.
+### Enviar eventos a la API local
 
-Cada simulación usa una cuenta ficticia diferente para evitar mezclar escenarios. Las métricas muestran todos los datos guardados; los filtros solo afectan la tabla de eventos. Las alertas tienen su propio filtro de estado. El panel consulta cambios cada 15 segundos, excepto mientras hay un diálogo abierto o se ejecuta una simulación.
-
-
-
-## Demo completa para Alwaysdata
-
-La demo está publicada en **https://bogotor.alwaysdata.net/** desde el 15 de noviembre de 2026. Se verificaron HTTPS, detecciones en Python, separación entre visitantes y conservación de eventos y notas tras reiniciar el sitio.
-
-La demo ejecuta las detecciones en **Python** y guarda los datos en **SQLite en el servidor**. Cada visitante tiene una sesión propia de 24 horas, con escenarios ficticios, límites de uso, exportación y reinicio independiente. La ingesta externa de registros reales está deshabilitada en esta entrada.
-
-Para previsualizar ese modo en tu computador:
-
-```sh
-python3 webapp.py
-```
-
-Abrir http://127.0.0.1:8766. Este servidor es solo para desarrollo. En Alwaysdata se usa `wsgi.py` detrás de su servidor HTTPS y WSGI.
-
-![Previsualización local de la entrada WSGI](docs/demo-wsgi.jpg)
-
-Ver [guía de despliegue, límites y respaldos](docs/DESPLIEGUE-ALWAYSDATA.md).
-
-## Enviar un evento a la API
-
-Este ejemplo es para la entrada local `app.py`; la demo pública no admite ingesta externa. Con el servidor local iniciado, desde otra terminal en esta carpeta:
+Con `app.py` iniciado, ejecutar desde otra terminal en la carpeta del proyecto:
 
 ```sh
 python3 examples/send_event.py
@@ -78,98 +104,39 @@ python3 examples/send_event.py --type login_success
 python3 examples/send_event.py --type role_changed
 ```
 
-El ejemplo envía un evento para `analista@demo.test` a `POST /api/events`. Genera un identificador único y una fecha UTC actual, y lee la credencial desde `data/ingest.token` sin mostrarla. Repetir cinco veces el primer comando dentro de cinco minutos y luego enviar un acceso exitoso permite observar las dos reglas de autenticación con la misma cuenta. El cambio de permisos utiliza los roles `viewer` y `admin`.
+El ejemplo genera una fecha UTC y un identificador único, y lee la credencial sin mostrarla. Repetir cinco veces el primer comando dentro de cinco minutos y después enviar el acceso exitoso permite probar las dos reglas de autenticación con la misma cuenta ficticia. Este ejemplo no envía datos a la demo pública.
 
-Si usas otro puerto, añade `--port 8766`. El parámetro `--user otra-cuenta@demo.test` permite separar escenarios. Envía únicamente datos ficticios.
-
-Formato de un evento (la fecha y el identificador del script se generan al ejecutarlo):
-
-```json
-{
-  "event_id": "evento-de-ejemplo-001",
-  "occurred_at": "2026-11-15T12:00:00Z",
-  "type": "login_failed",
-  "user": "analista@demo.test",
-  "source_ip": "192.0.2.25",
-  "metadata": {}
-}
-```
-
-Ver [contrato de la API y reglas](docs/ARQUITECTURA.md) para los campos admitidos y sus límites.
-
-## Pruebas
+### Ejecutar las pruebas
 
 ```sh
 python3 -m unittest discover -s tests -v
 ```
 
-Las pruebas HTTP abren un puerto temporal en la interfaz local. Se verifican ventanas temporales, separación por cuenta, reinicio de secuencias al ingresar, recepción fuera de orden, idempotencia, transacciones, persistencia y controles HTTP.
+Las pruebas de integración abren puertos temporales en la interfaz local. Node solo se utiliza en integración continua para comprobar la sintaxis de JavaScript.
 
-## Objetivo
+## Despliegue y mantenimiento
 
-Demostrar el ciclo completo de una solución: definición del problema, implementación, pruebas de detección, despliegue y documentación de resultados y limitaciones.
+La demo utiliza **Alwaysdata Free (0 €)**, su subdominio y almacenamiento persistente para SQLite. El plan tiene límites y condiciones de actividad; durante el primer año se requiere entrar al panel administrativo al menos cada 120 días. Las sesiones de la demo caducan a las 24 horas por diseño.
 
-## Primera versión
+El despliegue se actualiza manualmente desde GitHub; las pruebas están automatizadas, la publicación todavía no. La [guía de Alwaysdata](docs/DESPLIEGUE-ALWAYSDATA.md) incluye configuración WSGI, límites, copias consistentes y restauración.
 
-- Recibir eventos estructurados de accesos exitosos, accesos fallidos y cambios de permisos.
-- Guardar eventos y alertas en una base de datos local.
-- Mostrar un panel con filtros por usuario, tipo de evento y fecha.
-- Detectar cinco accesos fallidos para una misma cuenta en cinco minutos.
-- Detectar un acceso exitoso precedido por esos fallos dentro de la misma ventana.
-- Alertar cuando cambia el rol de un usuario.
-- Permitir marcar una alerta como pendiente, en investigación o resuelta, con una nota.
-- Generar escenarios sintéticos reproducibles para demostrar cada regla.
+## Limitaciones y siguiente versión
 
-Los umbrales iniciales son decisiones del proyecto, no valores universales. Se documentarán sus falsos positivos y limitaciones. Una alerta indica que se necesita revisión, no que se confirmó un ataque.
+La siguiente mejora funcional es **conectar una aplicación de inicio de sesión que envíe eventos automáticamente** y demostrar la detección de principio a fin. Por ahora esa integración externa no está implementada.
 
-## Componentes implementados
+Las reglas agrupan por cuenta, no detectan todos los tipos de ataque y no sustituyen una investigación. La demo limita eventos, sesiones y frecuencia de acciones; no es una plataforma de seguridad empresarial ni se ha evaluado su eficacia operativa.
 
-1. Generador de eventos sintéticos.
-2. API de recepción con validación de datos y credencial para la ingesta.
-3. Almacenamiento SQLite para la primera versión local.
-4. Motor de reglas basado en ventanas de tiempo.
-5. Panel web de eventos, alertas y notas de investigación.
+## Desarrollo asistido por IA
 
-No requiere un modelo de IA ni una API de pago. Las detecciones iniciales serán reglas explícitas y verificables.
-
-## Costos y publicación
-
-La demo utiliza Alwaysdata **Free (0 €)** con su subdominio gratuito, Python WSGI y almacenamiento persistente para SQLite. No se contrató un plan de pago ni un dominio propio.
-
-El plan tiene límites de recursos y condiciones de actividad: durante el primer año hay que entrar al panel administrativo al menos cada 120 días. Ver [condiciones y mantenimiento](docs/DESPLIEGUE-ALWAYSDATA.md).
-
-Cada visitante trabaja con datos sintéticos y una sesión temporal separada. La persistencia entre reinicios del sitio se verificó; las sesiones caducan a las 24 horas por diseño.
-
-## Evidencias que debe incluir el portafolio
-
-- Instrucciones reproducibles para ejecutar la aplicación.
-- Diagrama de arquitectura y modelo de eventos.
-- Pruebas de límites temporales, escenarios normales y eventos que generan alertas.
-- Tratamiento de eventos duplicados y fuera de orden, o documentación explícita de esas limitaciones.
-- Investigación de ejemplo: evento, detección, evidencia, posible falso positivo y resolución.
-- Capturas y un video breve de la demo.
-- Decisiones técnicas, riesgos conocidos y mejoras futuras.
-
-## Manejo de datos
-
-Usar identificadores y direcciones de ejemplo. No registrar contraseñas, tokens ni secretos. Mantener la recepción de eventos y las funciones de administración restringidas cuando se publique.
+El código, las pruebas y la documentación se desarrollaron con asistencia de IA. El repositorio incluye las comprobaciones automatizadas y los resultados observados del despliegue. El objetivo de aprendizaje es poder explicar y revisar el funcionamiento, las decisiones y los límites del sistema, además de mantenerlo disponible.
 
 ## Documentación
 
-- [Arquitectura, API y límites](docs/ARQUITECTURA.md).
-- [Investigación de ejemplo](docs/INVESTIGACION-EJEMPLO.md).
+- [Arquitectura, modelo de eventos y API](docs/ARQUITECTURA.md).
+- [Caso de investigación y posible falso positivo](docs/INVESTIGACION-EJEMPLO.md).
 - [Resultados de validación](docs/VALIDACION.md).
-- [Despliegue completo en Alwaysdata](docs/DESPLIEGUE-ALWAYSDATA.md).
-- [Recordatorio: publicación y presentación a reclutadores](docs/CIERRE-PORTAFOLIO.md).
-
-## Estado y siguiente etapa
-
-Primera versión local implementada. Incluye API con ingesta autenticada, almacenamiento persistente, motor de reglas, panel, simulaciones, filtros, exportación e investigaciones.
-
-El código está publicado en [GitHub](https://github.com/Bogotor/security-events-dashboard) y la demo en [Alwaysdata](https://bogotor.alwaysdata.net/). La entrada local escucha exclusivamente en el computador del autor. La entrada pública WSGI incorpora sesiones aisladas, controles de origen y límites. Se verificaron en el alojamiento real HTTPS, aislamiento y persistencia tras un reinicio.
-
-Pendientes de presentación: grabar el video breve y añadir los enlaces de demo, código y video al CV y LinkedIn, según el recordatorio de cierre. El despliegue se actualiza manualmente; todavía no hay despliegue continuo configurado.
-
+- [Despliegue y operación en Alwaysdata](docs/DESPLIEGUE-ALWAYSDATA.md).
+- [Pendientes de presentación del portafolio](docs/CIERRE-PORTAFOLIO.md).
 
 ## Licencia
 
